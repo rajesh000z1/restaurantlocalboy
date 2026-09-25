@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Local Boy - Restaurant Partner Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #121212;
+            background-image: radial-gradient(circle at top right, #1a1a2e, #121212);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 380px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px 30px;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(45deg, #10b981, #3b82f6);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            font-size: 30px;
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .login-container h2 {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .login-container p {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 35px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #b3b3b3;
+            margin-bottom: 6px;
+            margin-left: 5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i.prefix-icon {
+            position: absolute;
+            left: 16px;
+            color: #888;
+            font-size: 15px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 14px 45px 14px 45px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            outline: none;
+            color: #fff;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .toggle-pass {
+            position: absolute;
+            right: 16px;
+            color: #888;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #10b981, #3b82f6);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: #ff4c4c;
+            font-size: 12px;
+            margin-top: 20px;
+            display: none;
+            background: rgba(255, 76, 76, 0.1);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 76, 76, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="icon-circle">
+            <i class="fas fa-utensils"></i>
+        </div>
+        <h2>Local Boy</h2>
+        <p>Restaurant Partner App</p>
+
+        <form id="partnerLoginForm">
+            <div class="input-group">
+                <label>Login ID (Username)</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user prefix-icon"></i>
+                    <input type="text" id="loginId" placeholder="Enter Login ID" required autocomplete="off">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock prefix-icon"></i>
+                    <input type="password" id="password" placeholder="Enter Password" required>
+                    <i class="fas fa-eye toggle-pass" id="togglePass"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+                <span>LOGIN TO STORE</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+
+            <div id="errorMsg" class="error-message"></div>
+        </form>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+
+        // EXACT FIREBASE CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyAvjFcKKiu4OMmQckYXMTejdBJh9tC6TjM",
+            authDomain: "sri-vishnu-priya-finance-c591f.firebaseapp.com",
+            databaseURL: "https://sri-vishnu-priya-finance-c591f-default-rtdb.firebaseio.com",
+            projectId: "sri-vishnu-priya-finance-c591f",
+            storageBucket: "sri-vishnu-priya-finance-c591f.firebasestorage.app",
+            messagingSenderId: "184676228358",
+            appId: "1:184676228358:web:c2b32b68debeeadadfd287",
+            measurementId: "G-E3TT96ZH1T"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Auto-redirect if restaurant partner is already logged in
+        if (localStorage.getItem('lb_partner_restId')) {
+            window.location.href = "partner_dashboard.html";
+        }
+
+        // Show / Hide Password Toggle
+        const togglePass = document.getElementById('togglePass');
+        const passInput = document.getElementById('password');
+        togglePass.addEventListener('click', () => {
+            const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passInput.setAttribute('type', type);
+            togglePass.classList.toggle('fa-eye');
+            togglePass.classList.toggle('fa-eye-slash');
+        });
+
+        // Handle Login Form Submission
+        const loginForm = document.getElementById('partnerLoginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMsg = document.getElementById('errorMsg');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMsg.style.display = 'none';
+
+            const enteredId = document.getElementById('loginId').value.trim();
+            const enteredPass = document.getElementById('password').value.trim();
+
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+            loginBtn.disabled = true;
+
+            try {
+                const restRef = ref(db, 'restaurant_profiles');
+                const snapshot = await get(restRef);
+
+                let matchedRestId = null;
+                let matchedRestName = null;
+
+                if (snapshot.exists()) {
+                    snapshot.forEach((child) => {
+                        const data = child.val();
+                        if (data.loginId === enteredId && data.password === enteredPass) {
+                            matchedRestId = child.key;
+                            matchedRestName = data.name;
+                        }
+                    });
+                }
+
+                if (matchedRestId) {
+                    // Save session in localStorage
+                    localStorage.setItem('lb_partner_restId', matchedRestId);
+                    localStorage.setItem('lb_partner_restName', matchedRestName);
+                    window.location.href = "partner_dashboard.html";
+                } else {
+                    errorMsg.innerText = "Invalid Login ID or Password! Please check with Admin.";
+                    errorMsg.style.display = 'block';
+                    loginBtn.innerHTML = '<span>LOGIN TO STORE</span> <i class="fas fa-arrow-right"></i>';
+                    loginBtn.disabled = false;
+                }
+            } catch (error) {
+                errorMsg.innerText = "Network Error: " + error.message;
+                errorMsg.style.display = 'block';
+                loginBtn.innerHTML = '<span>LOGIN TO STORE</span> <i class="fas fa-arrow-right"></i>';
+                loginBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
