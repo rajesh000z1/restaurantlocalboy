@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Local Boy - Partner Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #121212; color: #ffffff; padding-bottom: 85px; overflow-x: hidden; }
+
+        /* --- TOP HEADER --- */
+        .app-header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(26, 26, 46, 0.95); backdrop-filter: blur(10px);
+            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .rest-title h2 { font-size: 18px; font-weight: 600; color: #fff; line-height: 1.2; }
+        .rest-title span { font-size: 11px; color: #10b981; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+        .rest-title span.closed-text { color: #ef4444; }
+
+        /* Store Open/Close Switch */
+        .store-switch-box { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.08); }
+        .store-switch-box small { font-size: 11px; font-weight: 600; color: #ccc; }
+        .switch { position: relative; display: inline-block; width: 42px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ef4444; transition: .3s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: #10b981; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* --- FLASHING NEW ORDER RINGING BANNER --- */
+        .ringing-banner {
+            display: none;
+            background: linear-gradient(45deg, #ef4444, #f59e0b);
+            color: #fff;
+            padding: 12px 18px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            animation: pulseAlert 0.8s infinite alternate;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+            cursor: pointer;
+        }
+        .ringing-banner.active { display: flex; }
+        .ringing-banner i { font-size: 18px; animation: bellShake 0.4s infinite; }
+        @keyframes pulseAlert { from { opacity: 1; } to { opacity: 0.75; } }
+        @keyframes bellShake {
+            0% { transform: rotate(0); }
+            25% { transform: rotate(18deg); }
+            50% { transform: rotate(0); }
+            75% { transform: rotate(-18deg); }
+            100% { transform: rotate(0); }
+        }
+
+        /* --- MAIN SECTIONS --- */
+        .tab-section { display: none; padding: 15px; max-width: 600px; margin: 0 auto; animation: fadeIn 0.2s ease; }
+        .tab-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 1. ORDERS TAB --- */
+        .order-subtabs { display: flex; gap: 8px; margin-bottom: 15px; background: #1a1a2e; padding: 6px; border-radius: 12px; }
+        .subtab-btn { flex: 1; padding: 10px 5px; background: none; border: none; color: #888; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; position: relative; }
+        .subtab-btn.active { background: #3b82f6; color: #fff; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
+        .badge-count { background: #ef4444; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+
+        .order-card { background: #1a1a2e; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 16px; margin-bottom: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+        .order-card.new-border { border-left: 4px solid #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); border-left-width: 5px; }
+        .order-card.prep-border { border-left: 4px solid #3b82f6; }
+        .order-card.ready-border { border-left: 4px solid #10b981; }
+
+        .order-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 12px; }
+        .order-id { font-size: 15px; font-weight: 700; color: #f59e0b; }
+        .order-time { font-size: 11px; color: #888; }
+        
+        .order-items { margin-bottom: 12px; }
+        .order-item-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; color: #eee; }
+        .order-item-row strong { color: #10b981; margin-right: 6px; }
+
+        .order-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; }
+        .net-earn-box small { font-size: 10px; color: #888; display: block; }
+        .net-earn-box span { font-size: 16px; font-weight: 700; color: #10b981; }
+
+        .btn-group { display: flex; gap: 10px; }
+        .btn-action { padding: 10px 18px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-accept { background: #10b981; color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        .btn-reject { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn-ready { background: #3b82f6; color: white; width: 100%; }
+        .status-pill { font-size: 12px; background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 6px 12px; border-radius: 20px; font-weight: 600; }
+
+        /* --- 2. MENU TAB --- */
+        .search-bar { width: 100%; padding: 12px 15px; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-size: 13px; margin-bottom: 15px; outline: none; }
+        .menu-item-card { background: #1a1a2e; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+        .menu-item-card.out-of-stock { opacity: 0.55; }
+        .menu-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #000; }
+        .menu-details { flex: 1; }
+        .menu-details h4 { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .veg-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .veg { background: #10b981; } .nonveg { background: #ef4444; }
+        .menu-details p { font-size: 12px; color: #3b82f6; font-weight: 600; margin-top: 2px; }
+        .stock-label { font-size: 10px; display: block; text-align: center; margin-top: 4px; color: #888; }
+
+        /* --- 3. ORDER HISTORY TAB --- */
+        .sec-heading { font-size: 14px; font-weight: 600; color: #b3b3b3; margin: 5px 0 12px; display: flex; align-items: center; gap: 6px; }
+        
+        .history-filter-card { background: #1a1a2e; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 15px; margin-bottom: 15px; }
+        .date-inputs-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        .date-group { flex: 1; }
+        .date-group label { display: block; font-size: 11px; color: #888; margin-bottom: 4px; }
+        .date-group input { width: 100%; padding: 10px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 12px; outline: none; }
+        .btn-search-hist { width: 100%; padding: 11px; background: linear-gradient(45deg, #3b82f6, #8b5cf6); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+        .range-summary-bar { display: flex; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); padding: 12px 15px; border-radius: 10px; margin-bottom: 15px; font-size: 13px; }
+        .range-summary-bar strong { color: #10b981; font-size: 15px; }
+
+        .hist-order-card { background: #1a1a2e; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .hist-left { flex: 1; }
+        .hist-id-time { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+        .hist-id { font-size: 14px; font-weight: 700; color: #f59e0b; }
+        .hist-time { font-size: 11px; color: #999; }
+        .hist-items { font-size: 13px; color: #eee; line-height: 1.5; }
+        .hist-items strong { color: #10b981; margin-right: 4px; }
+        .hist-right { text-align: right; min-width: 80px; }
+        .hist-right small { font-size: 10px; color: #888; display: block; }
+        .hist-right span { font-size: 17px; font-weight: 700; color: #10b981; }
+
+        /* --- 4. PAYOUTS TAB --- */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .stat-box { background: #1a1a2e; border: 1px solid rgba(255,255,255,0.06); padding: 15px; border-radius: 12px; }
+        .stat-box.full { grid-column: 1 / -1; background: linear-gradient(45deg, rgba(245, 158, 11, 0.12), rgba(26, 26, 46, 0.95)); border-color: rgba(245, 158, 11, 0.35); }
+        .stat-box small { font-size: 11px; color: #aaa; text-transform: uppercase; }
+        .stat-box h3 { font-size: 24px; font-weight: 700; color: #fff; margin-top: 4px; }
+        .stat-box.full h3 { color: #f59e0b; font-size: 28px; }
+
+        .payout-card { background: #1a1a2e; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 14px 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .payout-left h4 { font-size: 16px; color: #10b981; font-weight: 700; }
+        .payout-left p { font-size: 11px; color: #888; margin-top: 2px; }
+        .payout-right { text-align: right; font-size: 11px; color: #ccc; }
+        .utr-badge { background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+
+        /* --- 5. PROFILE TAB --- */
+        .profile-card { background: #1a1a2e; border-radius: 14px; padding: 18px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.06); }
+        .profile-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+        .profile-row:last-child { border-bottom: none; }
+        .profile-row span { color: #888; }
+        .profile-row strong { color: #fff; text-align: right; }
+
+        .review-item { background: #1a1a2e; border-radius: 10px; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .review-top { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+        .stars { color: #f59e0b; }
+        .review-comment { font-size: 12px; color: #ccc; font-style: italic; }
+
+        .logout-btn { width: 100%; padding: 14px; background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+
+        /* --- BOTTOM NAVIGATION (5 TABS) --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 65px;
+            background: #1a1a2e; border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex; justify-content: space-around; align-items: center; z-index: 100;
+        }
+        .nav-item { flex: 1; text-align: center; color: #888; text-decoration: none; padding: 6px 0; cursor: pointer; transition: 0.2s; }
+        .nav-item i { font-size: 17px; display: block; margin-bottom: 3px; }
+        .nav-item span { font-size: 10px; font-weight: 500; }
+        .nav-item.active { color: #10b981; }
+
+        .empty-state { text-align: center; color: #666; padding: 35px 20px; font-size: 13px; }
+        .empty-state i { font-size: 28px; margin-bottom: 8px; color: #444; display: block; }
+    </style>
+</head>
+<body>
+
+    <!-- TOP HEADER -->
+    <header class="app-header">
+        <div class="rest-title">
+            <h2 id="headerRestName">Loading...</h2>
+            <span id="headerStatusText"><i class="fas fa-circle" style="font-size: 8px;"></i> Online</span>
+        </div>
+        <div class="store-switch-box">
+            <small id="switchLabel">OPEN</small>
+            <label class="switch">
+                <input type="checkbox" id="storeStatusToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </header>
+
+    <!-- NEW ORDER RINGING & VIBRATING BANNER -->
+    <div class="ringing-banner" id="ringingBanner" onclick="focusNewOrders()">
+        <i class="fas fa-bell"></i>
+        <span>NEW ORDER WAITING! ACCEPT TO STOP ALARM</span>
+    </div>
+
+    <!-- 1. LIVE ORDERS SECTION -->
+    <section id="ordersSection" class="tab-section active">
+        <div class="order-subtabs">
+            <button class="subtab-btn active" onclick="switchOrderSubTab('new')">New <span class="badge-count" id="newCount">0</span></button>
+            <button class="subtab-btn" onclick="switchOrderSubTab('prep')">Preparing <span class="badge-count" id="prepCount" style="background:#3b82f6;">0</span></button>
+            <button class="subtab-btn" onclick="switchOrderSubTab('ready')">Ready <span class="badge-count" id="readyCount" style="background:#10b981;">0</span></button>
+        </div>
+        <div id="ordersListContainer">
+            <div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading Orders...</div>
+        </div>
+    </section>
+
+    <!-- 2. MENU SECTION -->
+    <section id="menuSection" class="tab-section">
+        <input type="text" class="search-bar" id="menuSearchInput" placeholder="🔍 Search menu items...">
+        <div id="menuListContainer">
+            <div class="empty-state"><i class="fas fa-utensils"></i> Loading Menu...</div>
+        </div>
+    </section>
+
+    <!-- 3. SEPARATE ORDER HISTORY SECTION -->
+    <section id="historySection" class="tab-section">
+        <div class="sec-heading"><i class="fas fa-calendar-alt" style="color:#3b82f6;"></i> Select Date Range</div>
+        <div class="history-filter-card">
+            <div class="date-inputs-row">
+                <div class="date-group">
+                    <label>From Date</label>
+                    <input type="date" id="histFromDate">
+                </div>
+                <div class="date-group">
+                    <label>To Date</label>
+                    <input type="date" id="histToDate">
+                </div>
+            </div>
+            <button class="btn-search-hist" onclick="filterOrderHistory()"><i class="fas fa-search"></i> Search Orders</button>
+        </div>
+
+        <div class="range-summary-bar" id="rangeSummaryBar">
+            <span>Total Orders: <strong id="rangeOrdersCount">0</strong></span>
+            <span>Net Earned: <strong id="rangeTotalEarned">₹0</strong></span>
+        </div>
+
+        <div id="historyOrdersContainer"></div>
+    </section>
+
+    <!-- 4. SEPARATE PAYOUTS SECTION -->
+    <section id="payoutsSection" class="tab-section">
+        <div class="stats-grid">
+            <div class="stat-box">
+                <small>Today's Orders</small>
+                <h3 id="todayOrdersStat">0</h3>
+            </div>
+            <div class="stat-box">
+                <small>Today's Net</small>
+                <h3 id="todayEarnStat" style="color: #10b981;">₹0</h3>
+            </div>
+            <div class="stat-box full">
+                <small>Total Pending Balance (From Admin)</small>
+                <h3 id="pendingBalanceStat">₹0</h3>
+            </div>
+        </div>
+
+        <div class="sec-heading"><i class="fas fa-money-check-alt" style="color:#10b981;"></i> Admin Payouts History</div>
+        <div id="payoutsListContainer">
+            <div class="empty-state">No payout records yet.</div>
+        </div>
+    </section>
+
+    <!-- 5. PROFILE SECTION -->
+    <section id="profileSection" class="tab-section">
+        <div class="sec-heading">Restaurant Info</div>
+        <div class="profile-card">
+            <div class="profile-row"><span>Owner Name</span><strong id="profOwner">-</strong></div>
+            <div class="profile-row"><span>Mobile</span><strong id="profPhone">-</strong></div>
+            <div class="profile-row"><span>Admin Commission</span><strong id="profComm" style="color:#f59e0b;">0%</strong></div>
+            <div class="profile-row"><span>Address</span><strong id="profAddr">-</strong></div>
+        </div>
+
+        <div class="sec-heading">Bank Account Details</div>
+        <div class="profile-card">
+            <div class="profile-row"><span>Bank Name</span><strong id="profBank">-</strong></div>
+            <div class="profile-row"><span>Account No</span><strong id="profAcc">-</strong></div>
+            <div class="profile-row"><span>IFSC Code</span><strong id="profIfsc">-</strong></div>
+        </div>
+
+        <div class="sec-heading">Recent Customer Reviews</div>
+        <div id="reviewsListContainer">
+            <div class="empty-state">No reviews yet.</div>
+        </div>
+
+        <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </section>
+
+    <!-- BOTTOM NAVIGATION (5 SEPARATE TABS) -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" id="navOrdersBtn" onclick="switchMainTab('ordersSection', this)">
+            <i class="fas fa-bell"></i><span>Orders</span>
+        </div>
+        <div class="nav-item" onclick="switchMainTab('menuSection', this)">
+            <i class="fas fa-book-open"></i><span>Menu</span>
+        </div>
+        <div class="nav-item" onclick="switchMainTab('historySection', this)">
+            <i class="fas fa-receipt"></i><span>History</span>
+        </div>
+        <div class="nav-item" onclick="switchMainTab('payoutsSection', this)">
+            <i class="fas fa-wallet"></i><span>Payouts</span>
+        </div>
+        <div class="nav-item" onclick="switchMainTab('profileSection', this)">
+            <i class="fas fa-store"></i><span>Profile</span>
+        </div>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+
+        // EXACT FIREBASE CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyAvjFcKKiu4OMmQckYXMTejdBJh9tC6TjM",
+            authDomain: "sri-vishnu-priya-finance-c591f.firebaseapp.com",
+            databaseURL: "https://sri-vishnu-priya-finance-c591f-default-rtdb.firebaseio.com",
+            projectId: "sri-vishnu-priya-finance-c591f",
+            storageBucket: "sri-vishnu-priya-finance-c591f.firebasestorage.app",
+            messagingSenderId: "184676228358",
+            appId: "1:184676228358:web:c2b32b68debeeadadfd287",
+            measurementId: "G-E3TT96ZH1T"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Check Auth Session
+        const restId = localStorage.getItem('lb_partner_restId');
+        if (!restId) {
+            window.location.href = "partner_login.html";
+        }
+
+        // --- SWIGGY STYLE CONTINUOUS RINGTONE & VIBRATION ENGINE ---
+        let audioCtx = null;
+        let ringtoneInterval = null;
+        let isRinging = false;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) audioCtx = new AudioContextClass();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Unlock audio & vibration on any screen tap
+        document.addEventListener('click', initAudioContext);
+        document.addEventListener('touchstart', initAudioContext);
+
+        function playSwiggyToneBurst() {
+            try {
+                initAudioContext();
+                if (!audioCtx) return;
+
+                const now = audioCtx.currentTime;
+                // Melodic urgent partner alert pattern (High-Low-High-Higher)
+                const notes = [
+                    { freq: 880, start: 0, dur: 0.14 },
+                    { freq: 659.25, start: 0.16, dur: 0.14 },
+                    { freq: 880, start: 0.32, dur: 0.14 },
+                    { freq: 1174.66, start: 0.48, dur: 0.32 }
+                ];
+
+                notes.forEach(n => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth'; // Loud, clear ringtone wave
+                    osc.frequency.setValueAtTime(n.freq, now + n.start);
+
+                    gain.gain.setValueAtTime(0.25, now + n.start);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + n.start + n.dur);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(now + n.start);
+                    osc.stop(now + n.start + n.dur);
+                });
+            } catch (e) {
+                console.log("Audio waiting for user interaction:", e);
+            }
+        }
+
+        function startOrderAlarm() {
+            document.getElementById('ringingBanner').classList.add('active');
+            if (isRinging) return;
+            isRinging = true;
+
+            const triggerAlertCycle = () => {
+                playSwiggyToneBurst();
+                if (navigator.vibrate) {
+                    navigator.vibrate([400, 150, 400, 150, 500]);
+                }
+            };
+
+            triggerAlertCycle();
+            ringtoneInterval = setInterval(triggerAlertCycle, 1600);
+        }
+
+        function stopOrderAlarm() {
+            document.getElementById('ringingBanner').classList.remove('active');
+            if (!isRinging) return;
+            isRinging = false;
+
+            if (ringtoneInterval) {
+                clearInterval(ringtoneInterval);
+                ringtoneInterval = null;
+            }
+            if (navigator.vibrate) {
+                navigator.vibrate(0); // Stop vibration immediately
+            }
+        }
+
+        window.focusNewOrders = function() {
+            initAudioContext();
+            switchMainTab('ordersSection', document.getElementById('navOrdersBtn'));
+            switchOrderSubTab('new');
+        };
+
+        // Local Indian Time Date Formatter
+        function getLocalTodayStr() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        const todayStr = getLocalTodayStr();
+        document.getElementById('histFromDate').value = todayStr;
+        document.getElementById('histToDate').value = todayStr;
+
+        let restCommission = 0;
+        let menuMap = {};
+        let allOrdersList = [];
+        let activeOrderSubTab = 'new';
+
+        function cleanVal(val, fallback = 'Not Provided') {
+            if (val === undefined || val === null || val === '' || val === 'undefined' || val === 'null') {
+                return fallback;
+            }
+            return val;
+        }
+
+        function isCompletedOrderForRest(status) {
+            const st = (status || '').toLowerCase();
+            return st === 'ready' || st === 'picked up' || st === 'out for delivery' || st === 'delivered';
+        }
+
+        // Navigation Switch Logic
+        window.switchMainTab = function(sectionId, navEl) {
+            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            navEl.classList.add('active');
+        };
+
+        window.switchOrderSubTab = function(subTab) {
+            activeOrderSubTab = subTab;
+            const btns = document.querySelectorAll('.subtab-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            if(subTab === 'new') btns[0].classList.add('active');
+            if(subTab === 'prep') btns[1].classList.add('active');
+            if(subTab === 'ready') btns[2].classList.add('active');
+            renderOrders();
+        };
+
+        // 1. Fetch Restaurant Profile & Status
+        const profileRef = ref(db, `restaurant_profiles/${restId}`);
+        onValue(profileRef, (snap) => {
+            if (!snap.exists()) return;
+            const data = snap.val();
+            restCommission = parseFloat(data.commission) || 0;
+
+            document.getElementById('headerRestName').innerText = cleanVal(data.name, 'Restaurant');
+            const isOpen = data.status === 'Open';
+            document.getElementById('storeStatusToggle').checked = isOpen;
+            document.getElementById('switchLabel').innerText = isOpen ? 'OPEN' : 'CLOSED';
+            
+            const statusText = document.getElementById('headerStatusText');
+            if (isOpen) {
+                statusText.innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Accepting Orders';
+                statusText.classList.remove('closed-text');
+            } else {
+                statusText.innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Store Closed';
+                statusText.classList.add('closed-text');
+            }
+
+            document.getElementById('profOwner').innerText = cleanVal(data.ownerName || data.owner);
+            document.getElementById('profPhone').innerText = cleanVal(data.phone || data.mobile);
+            document.getElementById('profComm').innerText = `${restCommission}%`;
+            document.getElementById('profAddr').innerText = cleanVal(data.address);
+
+            if (data.bankDetails) {
+                document.getElementById('profBank').innerText = cleanVal(data.bankDetails.bankName);
+                document.getElementById('profAcc').innerText = cleanVal(data.bankDetails.accountNumber);
+                document.getElementById('profIfsc').innerText = cleanVal(data.bankDetails.ifsc);
+            }
+
+            if (allOrdersList.length > 0) {
+                renderOrders();
+                calculateEarnings();
+                filterOrderHistory();
+            }
+        });
+
+        document.getElementById('storeStatusToggle').addEventListener('change', (e) => {
+            const newStatus = e.target.checked ? 'Open' : 'Closed';
+            update(ref(db, `restaurant_profiles/${restId}`), { status: newStatus });
+        });
+
+        // 2. Fetch Menu & Handle Stock Toggle
+        const menuRef = ref(db, `restaurant_menus/${restId}`);
+        onValue(menuRef, (snap) => {
+            menuMap = {};
+            if (snap.exists()) {
+                snap.forEach(child => {
+                    menuMap[child.key] = child.val();
+                });
+            }
+            renderMenu();
+            renderOrders();
+            filterOrderHistory();
+        });
+
+        function renderMenu() {
+            const container = document.getElementById('menuListContainer');
+            const searchTerm = document.getElementById('menuSearchInput').value.toLowerCase();
+            container.innerHTML = '';
+
+            let count = 0;
+            for (let key in menuMap) {
+                const item = menuMap[key];
+                if (searchTerm && !item.name.toLowerCase().includes(searchTerm)) continue;
+                count++;
+
+                const inStock = item.in_stock !== false;
+                const vegClass = item.type === 'veg' ? 'veg' : 'nonveg';
+                const imgSrc = item.image || 'https://cdn-icons-png.flaticon.com/512/3075/3075977.png';
+
+                const card = document.createElement('div');
+                card.className = `menu-item-card ${!inStock ? 'out-of-stock' : ''}`;
+                card.innerHTML = `
+                    <img src="${imgSrc}" class="menu-img">
+                    <div class="menu-details">
+                        <h4><span class="veg-dot ${vegClass}"></span> ${item.name}</h4>
+                        <p>₹${item.price} <span style="font-size:11px; color:#888; font-weight:400;">${item.weight || ''}</span></p>
+                    </div>
+                    <div>
+                        <label class="switch">
+                            <input type="checkbox" class="stock-toggle" data-key="${key}" ${inStock ? 'checked' : ''}>
+                            <span class="slider"></span>
+                        </label>
+                        <small class="stock-label">${inStock ? 'In Stock' : 'Out'}</small>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+
+            if (count === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i> No menu items found.</div>';
+            }
+        }
+
+        document.getElementById('menuSearchInput').addEventListener('input', renderMenu);
+
+        document.getElementById('menuListContainer').addEventListener('change', (e) => {
+            if (e.target.classList.contains('stock-toggle')) {
+                const itemKey = e.target.getAttribute('data-key');
+                const isStock = e.target.checked;
+                update(ref(db, `restaurant_menus/${restId}/${itemKey}`), { in_stock: isStock });
+            }
+        });
+
+        // 3. Fetch Orders & Calculate Earnings
+        let lifetimePaid = 0;
+        let lifetimeNetRev = 0;
+
+        onValue(ref(db, 'orders'), (snap) => {
+            allOrdersList = [];
+            if (snap.exists()) {
+                snap.forEach(child => {
+                    const ord = child.val();
+                    if (ord.restaurantId === restId) {
+                        ord.key = child.key;
+                        allOrdersList.push(ord);
+                    }
+                });
+            }
+            allOrdersList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            renderOrders();
+            calculateEarnings();
+            filterOrderHistory();
+        });
+
+        function calculateNetPayableForOrder(order) {
+            let delCharge = parseFloat(order.deliveryCharges || 0);
+            let platFee = parseFloat(order.platformFees || 0);
+            let grossTotal = parseFloat(order.totalAmount || 0);
+            let foodSubtotal = grossTotal - delCharge - platFee;
+            if (foodSubtotal < 0) foodSubtotal = grossTotal;
+            let commAmount = (foodSubtotal * restCommission) / 100;
+            return Math.round(foodSubtotal - commAmount);
+        }
+
+        function formatOrderItemsHtml(itemsObj, isCompact = false) {
+            let html = '';
+            if (!itemsObj) return isCompact ? 'No items' : '';
+
+            for (let id in itemsObj) {
+                const entry = itemsObj[id];
+                let qty = 1;
+                let iName = 'Menu Item';
+
+                if (typeof entry === 'object' && entry !== null) {
+                    qty = entry.qty || entry.quantity || 1;
+                    iName = entry.name || entry.itemName || (menuMap[id] && menuMap[id].name) || 'Item';
+                } else {
+                    qty = entry;
+                    iName = (menuMap[id] && menuMap[id].name) ? menuMap[id].name : 'Item';
+                }
+
+                if (isCompact) {
+                    html += `<div><strong>${qty}x</strong> ${iName}</div>`;
+                } else {
+                    html += `<div class="order-item-row"><span><strong>${qty}x</strong> ${iName}</span></div>`;
+                }
+            }
+            return html;
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('ordersListContainer');
+            container.innerHTML = '';
+
+            let newOrders = [], prepOrders = [], readyOrders = [];
+
+            allOrdersList.forEach(ord => {
+                const st = (ord.status || '').toLowerCase();
+                if (st === 'placed' || st === 'new' || st === 'pending') newOrders.push(ord);
+                else if (st === 'accepted' || st === 'preparing') prepOrders.push(ord);
+                else if (st === 'ready' || st === 'picked up' || st === 'out for delivery') readyOrders.push(ord);
+            });
+
+            // CONTINUOUS ALARM & VIBRATION UNTIL ALL NEW ORDERS ARE ACCEPTED/REJECTED
+            if (newOrders.length > 0) {
+                startOrderAlarm();
+            } else {
+                stopOrderAlarm();
+            }
+
+            document.getElementById('newCount').innerText = newOrders.length;
+            document.getElementById('prepCount').innerText = prepOrders.length;
+            document.getElementById('readyCount').innerText = readyOrders.length;
+
+            let displayList = activeOrderSubTab === 'new' ? newOrders : (activeOrderSubTab === 'prep' ? prepOrders : readyOrders);
+
+            if (displayList.length === 0) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-receipt"></i> No ${activeOrderSubTab} orders right now.</div>`;
+                return;
+            }
+
+            displayList.forEach(ord => {
+                const d = ord.timestamp ? new Date(ord.timestamp) : new Date();
+                const timeStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                const netPay = calculateNetPayableForOrder(ord);
+                const itemsHtml = formatOrderItemsHtml(ord.items, false);
+
+                let actionButtonsHtml = '';
+                let borderClass = 'new-border';
+
+                if (activeOrderSubTab === 'new') {
+                    actionButtonsHtml = `
+                        <div class="btn-group">
+                            <button class="btn-action btn-reject" data-key="${ord.key}" data-status="Rejected">Reject</button>
+                            <button class="btn-action btn-accept" data-key="${ord.key}" data-status="Preparing">Accept Order</button>
+                        </div>
+                    `;
+                } else if (activeOrderSubTab === 'prep') {
+                    borderClass = 'prep-border';
+                    actionButtonsHtml = `
+                        <button class="btn-action btn-ready" data-key="${ord.key}" data-status="Ready" style="max-width:160px;">Mark Food Ready</button>
+                    `;
+                } else {
+                    borderClass = 'ready-border';
+                    actionButtonsHtml = `<span class="status-pill"><i class="fas fa-check"></i> ${ord.status}</span>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `order-card ${borderClass}`;
+                card.innerHTML = `
+                    <div class="order-top">
+                        <span class="order-id">#${ord.orderId || ord.key.substring(0, 6).toUpperCase()}</span>
+                        <span class="order-time"><i class="far fa-clock"></i> ${timeStr}</span>
+                    </div>
+                    <div class="order-items">${itemsHtml}</div>
+                    <div class="order-footer">
+                        <div class="net-earn-box">
+                            <small>Your Net Earning</small>
+                            <span>₹${netPay}</span>
+                        </div>
+                        ${actionButtonsHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        document.getElementById('ordersListContainer').addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-action');
+            if (!btn) return;
+            const key = btn.getAttribute('data-key');
+            const newStatus = btn.getAttribute('data-status');
+
+            if (newStatus === 'Rejected' && !confirm("Are you sure you want to REJECT this order?")) return;
+            update(ref(db, `orders/${key}`), { status: newStatus });
+        });
+
+        // 4. Separate Order History Filter
+        window.filterOrderHistory = function() {
+            const fromStr = document.getElementById('histFromDate').value;
+            const toStr = document.getElementById('histToDate').value;
+            const container = document.getElementById('historyOrdersContainer');
+
+            if (!fromStr || !toStr) return;
+
+            const fromTime = new Date(fromStr + "T00:00:00").getTime();
+            const toTime = new Date(toStr + "T23:59:59").getTime();
+
+            let matchedOrders = [];
+            let rangeTotalNet = 0;
+
+            allOrdersList.forEach(ord => {
+                if (isCompletedOrderForRest(ord.status) && ord.timestamp >= fromTime && ord.timestamp <= toTime) {
+                    matchedOrders.push(ord);
+                }
+            });
+
+            container.innerHTML = '';
+
+            if (matchedOrders.length === 0) {
+                document.getElementById('rangeOrdersCount').innerText = '0';
+                document.getElementById('rangeTotalEarned').innerText = '₹0';
+                container.innerHTML = '<div class="empty-state">No orders found in selected dates.</div>';
+                return;
+            }
+
+            matchedOrders.forEach(ord => {
+                const netPay = calculateNetPayableForOrder(ord);
+                rangeTotalNet += netPay;
+
+                const d = new Date(ord.timestamp);
+                const dateTimeStr = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) + ' • ' +
+                                    d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+                const itemsHtml = formatOrderItemsHtml(ord.items, true);
+
+                container.innerHTML += `
+                    <div class="hist-order-card">
+                        <div class="hist-left">
+                            <div class="hist-id-time">
+                                <span class="hist-id">#${ord.orderId || ord.key.substring(0, 6).toUpperCase()}</span>
+                                <span class="hist-time">${dateTimeStr}</span>
+                            </div>
+                            <div class="hist-items">${itemsHtml}</div>
+                        </div>
+                        <div class="hist-right">
+                            <small>Net Amount</small>
+                            <span>₹${netPay}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('rangeOrdersCount').innerText = matchedOrders.length;
+            document.getElementById('rangeTotalEarned').innerText = `₹${rangeTotalNet}`;
+        };
+
+        // 5. Payouts & Pending Balance Calculation
+        function calculateEarnings() {
+            const today = new Date();
+            const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+
+            let todayCount = 0;
+            let todayNet = 0;
+            lifetimeNetRev = 0;
+
+            allOrdersList.forEach(ord => {
+                if (isCompletedOrderForRest(ord.status)) {
+                    const net = calculateNetPayableForOrder(ord);
+                    lifetimeNetRev += net;
+                    if (ord.timestamp >= todayStart) {
+                        todayCount++;
+                        todayNet += net;
+                    }
+                }
+            });
+
+            document.getElementById('todayOrdersStat').innerText = todayCount;
+            document.getElementById('todayEarnStat').innerText = `₹${todayNet}`;
+            updatePendingDisplay();
+        }
+
+        onValue(ref(db, `restaurant_payouts/${restId}`), (snap) => {
+            const container = document.getElementById('payoutsListContainer');
+            container.innerHTML = '';
+            lifetimePaid = 0;
+
+            if (snap.exists()) {
+                let list = [];
+                snap.forEach(child => {
+                    const pay = child.val();
+                    lifetimePaid += parseFloat(pay.paidAmount || 0);
+                    list.push(pay);
+                });
+                list.sort((a, b) => b.timestamp - a.timestamp);
+
+                list.forEach(pay => {
+                    const d = new Date(pay.timestamp).toLocaleDateString('en-IN');
+                    container.innerHTML += `
+                        <div class="payout-card">
+                            <div class="payout-left">
+                                <h4>₹${Math.round(pay.paidAmount)}</h4>
+                                <p>${d} • ${pay.payType}</p>
+                            </div>
+                            <div class="payout-right">
+                                <span class="utr-badge">UTR: ${pay.txnId}</span>
+                                <p style="margin-top:4px; color:#888;">${pay.fromDate} to ${pay.toDate}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = '<div class="empty-state">No payout records found.</div>';
+            }
+            updatePendingDisplay();
+        });
+
+        function updatePendingDisplay() {
+            const pending = Math.max(0, Math.round(lifetimeNetRev - lifetimePaid));
+            document.getElementById('pendingBalanceStat').innerText = `₹${pending}`;
+        }
+
+        // 6. Fetch Customer Reviews
+        onValue(ref(db, 'reviews'), (snap) => {
+            const container = document.getElementById('reviewsListContainer');
+            container.innerHTML = '';
+            let count = 0;
+
+            if (snap.exists()) {
+                snap.forEach(child => {
+                    const rev = child.val();
+                    if (rev.restaurantId === restId && !rev.is_hidden) {
+                        count++;
+                        const stars = '⭐'.repeat(Math.round(rev.rating || 5));
+                        container.innerHTML += `
+                            <div class="review-item">
+                                <div class="review-top">
+                                    <strong>${rev.customerName || 'Customer'}</strong>
+                                    <span class="stars">${stars}</span>
+                                </div>
+                                <div class="review-comment">"${rev.comment || ''}"</div>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            if (count === 0) {
+                container.innerHTML = '<div class="empty-state">No customer reviews yet.</div>';
+            }
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (confirm("Logout from Partner App?")) {
+                stopOrderAlarm();
+                localStorage.removeItem('lb_partner_restId');
+                localStorage.removeItem('lb_partner_restName');
+                window.location.href = "partner_login.html";
+            }
+        });
+    </script>
+</body>
+</html>
